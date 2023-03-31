@@ -12,10 +12,10 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.sladkkov.dto.Credit;
-import ru.sladkkov.dto.PaymentScheduleElement;
-import ru.sladkkov.dto.ScoringData;
-import ru.sladkkov.exception.ScoringDataDtoIsNullException;
+import ru.sladkkov.dto.CreditDto;
+import ru.sladkkov.dto.PaymentScheduleElementDto;
+import ru.sladkkov.dto.ScoringDataDto;
+import ru.sladkkov.exception.custom.ScoringDataDtoIsNullException;
 
 @Service
 @RequiredArgsConstructor
@@ -25,41 +25,41 @@ public class CalculationCreditService {
   private final ConveyorService conveyorService;
   private final ScoringService scoringService;
 
-  public Credit calculateCreditDto(ScoringData scoringData) {
+  public CreditDto calculateCreditDto(ScoringDataDto scoringDataDto) {
 
     log.info("Начинаю создание CreditDto в методе calculateCreditDto");
 
-    if (scoringData == null) {
+    if (scoringDataDto == null) {
       log.error("scoringDataDto is null");
 
       throw new ScoringDataDtoIsNullException("scoringDataDto is null", new NullPointerException());
     }
 
-    var rate = scoringService.scoringData(scoringData);
+    var rate = scoringService.scoringData(scoringDataDto);
 
     var monthlyPayment =
         conveyorService.calculateMonthlyPayment(
-            scoringData.getLoanApplicationRequest().getTerm(),
+            scoringDataDto.getLoanApplicationRequestDto().getTerm(),
             rate,
-            scoringData.getLoanApplicationRequest().getAmount());
+            scoringDataDto.getLoanApplicationRequestDto().getAmount());
 
     var paymentScheduleElements =
         calculatePaymentScheduleList(
-            scoringData.getLoanApplicationRequest().getTerm(),
+            scoringDataDto.getLoanApplicationRequestDto().getTerm(),
             rate,
-            scoringData.getLoanApplicationRequest().getAmount(),
+            scoringDataDto.getLoanApplicationRequestDto().getAmount(),
             monthlyPayment);
 
     var psk =
         calculatePsk(
-            paymentScheduleElements, scoringData.getLoanApplicationRequest().getAmount());
+            paymentScheduleElements, scoringDataDto.getLoanApplicationRequestDto().getAmount());
 
-    Credit credit =
-        Credit.builder()
-            .amount(scoringData.getLoanApplicationRequest().getAmount())
-            .term(scoringData.getLoanApplicationRequest().getTerm())
+    CreditDto creditDto =
+        CreditDto.builder()
+            .amount(scoringDataDto.getLoanApplicationRequestDto().getAmount())
+            .term(scoringDataDto.getLoanApplicationRequestDto().getTerm())
             .rate(rate)
-            .isSalaryClient(scoringData.getIsSalaryClient())
+            .isSalaryClient(scoringDataDto.getIsSalaryClient())
             .psk(psk)
             .paymentSchedule(paymentScheduleElements)
             .monthlyPayment(monthlyPayment)
@@ -68,25 +68,25 @@ public class CalculationCreditService {
     log.info(
         "Заканчиваю создание CreditDto. amount = {}, term = {}, rate = {}, isSalaryClient = {},"
             + " psk = {}, paymentSchedule = {}, monthlyPayment = {}",
-        scoringData.getLoanApplicationRequest().getAmount(),
-        scoringData.getLoanApplicationRequest().getTerm(),
+        scoringDataDto.getLoanApplicationRequestDto().getAmount(),
+        scoringDataDto.getLoanApplicationRequestDto().getTerm(),
         rate,
-        scoringData.getIsSalaryClient(),
+        scoringDataDto.getIsSalaryClient(),
         psk,
         paymentScheduleElements,
         monthlyPayment);
 
-    return credit;
+    return creditDto;
   }
 
-  public List<PaymentScheduleElement> calculatePaymentScheduleList(
+  public List<PaymentScheduleElementDto> calculatePaymentScheduleList(
       Integer term, BigDecimal rate, BigDecimal creditAmount, BigDecimal monthlyPayment) {
 
     log.info("Начинаю создание List<PaymentScheduleElement>");
 
     BigDecimal remainingDebt = creditAmount;
 
-    List<PaymentScheduleElement> paymentScheduleElementList = new ArrayList<>();
+    List<PaymentScheduleElementDto> paymentScheduleElementDtoList = new ArrayList<>();
 
     for (int i = 1; i <= term; i++) {
       LocalDate paymentDate = LocalDate.now().plusMonths(i);
@@ -102,8 +102,8 @@ public class CalculationCreditService {
       remainingDebt = remainingDebt.subtract(debtPayment);
 
       if (i != term) {
-        paymentScheduleElementList.add(
-            PaymentScheduleElement.builder()
+        paymentScheduleElementDtoList.add(
+            PaymentScheduleElementDto.builder()
                 .number(i)
                 .date(paymentDate)
                 .totalPayment(monthlyPayment)
@@ -112,8 +112,8 @@ public class CalculationCreditService {
                 .remainingDebt(remainingDebt)
                 .build());
       } else {
-        paymentScheduleElementList.add(
-            PaymentScheduleElement.builder()
+        paymentScheduleElementDtoList.add(
+            PaymentScheduleElementDto.builder()
                 .number(i)
                 .date(paymentDate)
                 .totalPayment(monthlyPayment.add(remainingDebt))
@@ -133,30 +133,30 @@ public class CalculationCreditService {
           remainingDebt);
     }
 
-    return paymentScheduleElementList;
+    return paymentScheduleElementDtoList;
   }
 
   public BigDecimal calculateAllInterestPayment(
-      List<PaymentScheduleElement> paymentScheduleElementList) {
+      List<PaymentScheduleElementDto> paymentScheduleElementDtoList) {
 
     List<BigDecimal> interestPayments =
-        paymentScheduleElementList.stream()
-            .map(PaymentScheduleElement::getInterestPayment)
+        paymentScheduleElementDtoList.stream()
+            .map(PaymentScheduleElementDto::getInterestPayment)
             .toList();
 
     return interestPayments.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
   public BigDecimal calculatePsk(
-      List<PaymentScheduleElement> paymentScheduleElementList, BigDecimal creditAmount) {
+      List<PaymentScheduleElementDto> paymentScheduleElementDtoList, BigDecimal creditAmount) {
 
     List<BigDecimal> payments =
-        paymentScheduleElementList.stream()
-            .map(PaymentScheduleElement::getTotalPayment)
+        paymentScheduleElementDtoList.stream()
+            .map(PaymentScheduleElementDto::getTotalPayment)
             .collect(toList());
 
     List<LocalDate> dates =
-        paymentScheduleElementList.stream().map(PaymentScheduleElement::getDate).collect(toList());
+        paymentScheduleElementDtoList.stream().map(PaymentScheduleElementDto::getDate).collect(toList());
 
     dates.add(0, LocalDate.now());
     payments.add(0, creditAmount.negate());
@@ -167,7 +167,7 @@ public class CalculationCreditService {
 
     List<BigDecimal> daysSinceDeliveryToEachPayment = new ArrayList<>();
 
-    for (int k = 0; k <= paymentScheduleElementList.size(); k++) {
+    for (int k = 0; k <= paymentScheduleElementDtoList.size(); k++) {
       int daysToPayment =
           (int) Duration.between(dates.get(0).atStartOfDay(), dates.get(k).atStartOfDay()).toDays();
       daysSinceDeliveryToEachPayment.add(BigDecimal.valueOf(daysToPayment));
@@ -176,7 +176,7 @@ public class CalculationCreditService {
     List<BigDecimal> eList = new ArrayList<>();
     List<BigDecimal> qList = new ArrayList<>();
 
-    for (int k = 0; k <= paymentScheduleElementList.size(); k++) {
+    for (int k = 0; k <= paymentScheduleElementDtoList.size(); k++) {
       eList.add(
           daysSinceDeliveryToEachPayment
               .get(k)
@@ -195,7 +195,7 @@ public class CalculationCreditService {
     while (sum.doubleValue() > 0) {
 
       sum = BigDecimal.ZERO;
-      for (int k = 0; k <= paymentScheduleElementList.size(); k++) {
+      for (int k = 0; k <= paymentScheduleElementDtoList.size(); k++) {
 
         BigDecimal firstPartDivider = eList.get(k).multiply(i).add(BigDecimal.ONE);
         BigDecimal secondPartDivider = (new BigDecimal(1).add(i)).pow(qList.get(k).intValue());

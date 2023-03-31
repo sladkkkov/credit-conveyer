@@ -7,12 +7,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.Test;
-import ru.sladkkov.dto.LoanApplicationRequest;
+import ru.sladkkov.dto.LoanApplicationRequestDto;
 
 class ConveyorServiceTest {
 
-  private LoanApplicationRequest loanApplicationRequest =
-      LoanApplicationRequest.builder()
+  private LoanApplicationRequestDto loanApplicationRequestDto =
+      LoanApplicationRequestDto.builder()
           .amount(BigDecimal.ONE)
           .term(35)
           .firstName("Danila")

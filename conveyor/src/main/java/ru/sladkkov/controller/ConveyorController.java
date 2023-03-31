@@ -3,17 +3,13 @@ package ru.sladkkov.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.sladkkov.dto.Credit;
-import ru.sladkkov.dto.LoanApplicationRequest;
-import ru.sladkkov.dto.LoanOffer;
-import ru.sladkkov.dto.ScoringData;
+import ru.sladkkov.dto.*;
 import ru.sladkkov.service.CalculationCreditService;
 import ru.sladkkov.service.ConveyorService;
 
@@ -25,47 +21,49 @@ import ru.sladkkov.service.ConveyorService;
 // TODO Сделать описание
 public class ConveyorController {
 
-  public static final String GET_OFFERS = "/offers";
-  public static final String GET_OFFERS_WITH_SORT = "/offers/sort";
-  private static final String CALCULATION_OFFER = "/calculation";
   private final ConveyorService conveyorService;
-
   private final CalculationCreditService calculationCreditService;
 
   // TODO Сделать описание
   @Operation(summary = "getOffers", description = "")
-  @PostMapping(GET_OFFERS)
-  public List<LoanOffer> getOffers(
-      @Valid @RequestBody LoanApplicationRequest loanApplicationRequest) {
+  @PostMapping("/offers")
+  public LoanOfferDtoList getOffers(
+      @Valid @RequestBody LoanApplicationRequestDto loanApplicationRequestDto) {
 
     log.info(
         "LoanApplicationRequestDto поступил в ConveyorController по пути /conveyor/offers. "
             + "loanApplicationRequestDto: {}",
-        loanApplicationRequest);
+        loanApplicationRequestDto);
 
-    return conveyorService.calculationOffers(loanApplicationRequest);
+    return new LoanOfferDtoList(conveyorService.calculationOffers(loanApplicationRequestDto));
   }
 
   // TODO Сделать описание
   @Operation(summary = "getSortedOffers", description = "")
-  @PostMapping(GET_OFFERS_WITH_SORT)
-  public List<LoanOffer> getSortedOffers(
-      @Valid @RequestBody LoanApplicationRequest loanApplicationRequest) {
+  @PostMapping("/offers/sort")
+  public LoanOfferDtoList getSortedOffers(
+      @Valid @RequestBody LoanApplicationRequestDto loanApplicationRequestDto) {
 
     log.info(
         "LoanApplicationRequestDto поступил в ConveyorController по пути /conveyor/offers/sort. "
             + "loanApplicationRequestDto: {}",
-        loanApplicationRequest);
+        loanApplicationRequestDto);
 
-    return conveyorService.sortLoanOfferDtoWithGetRate(
-        conveyorService.calculationOffers(loanApplicationRequest));
+    return new LoanOfferDtoList(
+        conveyorService.sortLoanOfferDtoWithGetRate(
+            conveyorService.calculationOffers(loanApplicationRequestDto)));
   }
 
   // TODO Сделать описание
   @Operation(summary = "calculation", description = "")
-  @PostMapping(CALCULATION_OFFER)
-  public Credit calculation(@Valid @RequestBody ScoringData scoringData) {
+  @PostMapping("/calculation")
+  public CreditDto calculation(@Valid @RequestBody ScoringDataDto scoringDataDto) {
 
-    return calculationCreditService.calculateCreditDto(scoringData);
+    log.info(
+        "ScoringDataDto поступил в ConveyorController по пути /conveyor/calculation. "
+            + "scoringDataDto: {}",
+        scoringDataDto);
+
+    return calculationCreditService.calculateCreditDto(scoringDataDto);
   }
 }

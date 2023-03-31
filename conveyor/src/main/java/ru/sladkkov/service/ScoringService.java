@@ -6,12 +6,12 @@ import java.time.Period;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.sladkkov.dto.ScoringData;
+import ru.sladkkov.dto.ScoringDataDto;
 import ru.sladkkov.enums.EmploymentStatus;
 import ru.sladkkov.enums.Gender;
 import ru.sladkkov.enums.MartialStatus;
 import ru.sladkkov.enums.PositionAtWork;
-import ru.sladkkov.exception.*;
+import ru.sladkkov.exception.custom.*;
 
 @Service
 @Slf4j
@@ -20,39 +20,39 @@ public class ScoringService {
   @Value("${baseRate}")
   private BigDecimal baseRate;
 
-  public BigDecimal scoringData(ScoringData scoringData) {
+  public BigDecimal scoringData(ScoringDataDto scoringDataDto) {
 
     log.info("Скоринг занятости, rate: {}", baseRate);
 
     BigDecimal rate = baseRate;
 
-    rate = rate.add(checkEmploymentStatus(scoringData));
+    rate = rate.add(checkEmploymentStatus(scoringDataDto));
 
-    rate = rate.add(checkMartialStatus(scoringData));
+    rate = rate.add(checkMartialStatus(scoringDataDto));
 
-    rate = rate.add(checkWorkPosition(scoringData));
+    rate = rate.add(checkWorkPosition(scoringDataDto));
 
-    rate = rate.add(checkDependentAmount(scoringData));
+    rate = rate.add(checkDependentAmount(scoringDataDto));
 
-    rate = rate.add(checkAgeWithGender(scoringData));
+    rate = rate.add(checkAgeWithGender(scoringDataDto));
 
-    rate = rate.add(checkEmployeeSalary(scoringData));
+    rate = rate.add(checkEmployeeSalary(scoringDataDto));
 
-    rate = rate.add(calculateRate(scoringData));
+    rate = rate.add(calculateRate(scoringDataDto));
 
-    checkWorkExperience(scoringData);
+    checkWorkExperience(scoringDataDto);
 
     log.info("Скоринг занятости, rate: {}", rate);
 
     return rate;
   }
 
-  public BigDecimal checkEmploymentStatus(final ScoringData scoringData) {
+  public BigDecimal checkEmploymentStatus(final ScoringDataDto scoringDataDto) {
     BigDecimal additionalRate = BigDecimal.ZERO;
 
     log.info("Скоринг занятости начался. Добавочный additionalRate: {}", additionalRate);
 
-    var employmentStatus = scoringData.getEmployment().getEmploymentStatus();
+    var employmentStatus = scoringDataDto.getEmploymentDto().getEmploymentStatus();
 
     if (employmentStatus.equals(EmploymentStatus.UNEMPLOYED)) {
       log.error("Рабочий статус клиента - безработный. Отказ.");
@@ -73,13 +73,13 @@ public class ScoringService {
     return additionalRate;
   }
 
-  public BigDecimal checkMartialStatus(final ScoringData scoringData) {
+  public BigDecimal checkMartialStatus(final ScoringDataDto scoringDataDto) {
 
     BigDecimal additionalRate = BigDecimal.ZERO;
 
     log.info("Скоринг семейного положения начался. Добавочный additionalRate: {}", additionalRate);
 
-    var maritalStatus = scoringData.getMaritalStatus();
+    var maritalStatus = scoringDataDto.getMaritalStatus();
 
     if (maritalStatus.equals(MartialStatus.MARRIED)) {
       additionalRate = additionalRate.subtract(BigDecimal.valueOf(0.3));
@@ -99,13 +99,13 @@ public class ScoringService {
     return additionalRate;
   }
 
-  public BigDecimal checkWorkPosition(final ScoringData scoringData) {
+  public BigDecimal checkWorkPosition(final ScoringDataDto scoringDataDto) {
 
     BigDecimal additionalRate = BigDecimal.ZERO;
 
     log.info("Скоринг рабочей позиции начался. Добавочный additionalRate: {}", additionalRate);
 
-    var position = scoringData.getEmployment().getPosition();
+    var position = scoringDataDto.getEmploymentDto().getPosition();
 
     if (position.equals(PositionAtWork.MIDDLE_MANAGER)) {
       additionalRate = additionalRate.subtract(BigDecimal.valueOf(0.2));
@@ -120,14 +120,14 @@ public class ScoringService {
     return additionalRate;
   }
 
-  public BigDecimal checkAgeWithGender(final ScoringData scoringData) {
+  public BigDecimal checkAgeWithGender(final ScoringDataDto scoringDataDto) {
 
     BigDecimal additionalRate = BigDecimal.ZERO;
 
     log.info("Скоринг возраста и пола начался. Добавочный additionalRate: {}", additionalRate);
 
     Period period =
-        Period.between( scoringData.getLoanApplicationRequest().getBirthday(), LocalDate.now());
+        Period.between(scoringDataDto.getLoanApplicationRequestDto().getBirthday(), LocalDate.now());
 
     var years = period.getYears();
 
@@ -145,11 +145,11 @@ public class ScoringService {
           "Возраст не подходит под условия кредита {}. Отказ.", new IllegalAccessException());
     }
 
-    if (!scoringData.getGender().equals(Gender.MALE) && years > 30 || years < 55) {
+    if (!scoringDataDto.getGender().equals(Gender.MALE) && years > 30 || years < 55) {
       additionalRate = additionalRate.subtract(BigDecimal.valueOf(0.3));
     }
 
-    if (scoringData.getGender().equals(Gender.FEMALE) && years > 35 || years < 60) {
+    if (scoringDataDto.getGender().equals(Gender.FEMALE) && years > 35 || years < 60) {
       additionalRate = additionalRate.subtract(BigDecimal.valueOf(0.3));
     }
 
@@ -158,11 +158,11 @@ public class ScoringService {
     return additionalRate;
   }
 
-  public void checkWorkExperience(final ScoringData scoringData) {
+  public void checkWorkExperience(final ScoringDataDto scoringDataDto) {
 
     log.info("Скоринг опыта работы начался");
 
-    var workExperienceTotal = scoringData.getEmployment().getWorkExperienceTotal();
+    var workExperienceTotal = scoringDataDto.getEmploymentDto().getWorkExperienceTotal();
 
     if (workExperienceTotal < 12) {
       log.error(
@@ -173,7 +173,7 @@ public class ScoringService {
           "Недостаточно общего опыта работы для одобрения кредита.", new IllegalAccessException());
     }
 
-    if (scoringData.getEmployment().getWorkExperienceCurrent() < 3) {
+    if (scoringDataDto.getEmploymentDto().getWorkExperienceCurrent() < 3) {
       log.error(
           "Недостаточно текущего опыта работы, заявка отклонена workExperienceTotal {} < 3",
           workExperienceTotal);
@@ -186,14 +186,14 @@ public class ScoringService {
     log.info("Скоринг опыта работы закончился");
   }
 
-  public BigDecimal checkDependentAmount(final ScoringData scoringData) {
+  public BigDecimal checkDependentAmount(final ScoringDataDto scoringDataDto) {
 
     BigDecimal additionalRate = BigDecimal.ZERO;
 
     log.info(
         "Скоринг количества иждивенцов начался. Добавочный additionalRate: {}", additionalRate);
 
-    if (scoringData.getDependentAmount() > 1) {
+    if (scoringDataDto.getDependentAmount() > 1) {
       additionalRate = additionalRate.add(BigDecimal.valueOf(0.1));
     }
 
@@ -203,15 +203,15 @@ public class ScoringService {
     return additionalRate;
   }
 
-  public BigDecimal checkEmployeeSalary(final ScoringData scoringData) {
+  public BigDecimal checkEmployeeSalary(final ScoringDataDto scoringDataDto) {
     BigDecimal additionalRate = BigDecimal.ZERO;
 
     log.info("Скоринг зарплаты начинается. Добавочный additionalRate: {}", additionalRate);
 
-    if (scoringData
-            .getLoanApplicationRequest()
+    if (scoringDataDto
+            .getLoanApplicationRequestDto()
             .getAmount()
-            .compareTo(scoringData.getEmployment().getSalary().multiply(BigDecimal.valueOf(20)))
+            .compareTo(scoringDataDto.getEmploymentDto().getSalary().multiply(BigDecimal.valueOf(20)))
         >= 0) {
 
       log.error("Размер кредита превышает 20 зарплат. Отказ");
@@ -225,16 +225,16 @@ public class ScoringService {
     return additionalRate;
   }
 
-  public BigDecimal calculateRate(final ScoringData scoringData) {
+  public BigDecimal calculateRate(final ScoringDataDto scoringDataDto) {
     BigDecimal additionalRate = BigDecimal.ZERO;
 
     log.info("Скоринг начинается. Добавочный additionalRate: {}", additionalRate);
 
-    if (Boolean.TRUE.equals(scoringData.getIsInsuranceEnabled())) {
+    if (Boolean.TRUE.equals(scoringDataDto.getIsInsuranceEnabled())) {
       additionalRate = additionalRate.subtract(BigDecimal.valueOf(0.3));
     }
 
-    if (Boolean.TRUE.equals(scoringData.getIsSalaryClient())) {
+    if (Boolean.TRUE.equals(scoringDataDto.getIsSalaryClient())) {
       additionalRate = additionalRate.subtract(BigDecimal.valueOf(0.1));
     }
 

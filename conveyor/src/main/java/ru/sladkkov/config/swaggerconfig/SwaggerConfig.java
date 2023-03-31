@@ -15,10 +15,13 @@ public class SwaggerConfig {
     return new OpenAPI()
         .info(
             new Info()
-                    //TODO
-                .title("")
+                .title("Кредитный калькулятор")
                 .version("1.0.0")
-                .contact(new Contact().email("sladkkov@yandex.ru").name("Sladkov Danila")));
+                .contact(
+                    new Contact()
+                        .email("sladkkov@yandex.ru")
+                        .url("https://t.me/@sladkkov")
+                        .name("Sladkov Danila")));
   }
 }
 */

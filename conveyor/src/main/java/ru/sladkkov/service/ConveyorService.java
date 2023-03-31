@@ -8,9 +8,9 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.sladkkov.dto.LoanApplicationRequest;
-import ru.sladkkov.dto.LoanOffer;
-import ru.sladkkov.exception.LoanApplicationRequestDtoIsNullException;
+import ru.sladkkov.dto.LoanApplicationRequestDto;
+import ru.sladkkov.dto.LoanOfferDto;
+import ru.sladkkov.exception.custom.LoanApplicationRequestDtoIsNullException;
 
 @Service
 @Slf4j
@@ -20,12 +20,12 @@ public class ConveyorService {
   @Value("${baseRate}")
   private BigDecimal baseRate;
 
-  public List<LoanOffer> calculationOffers(
-      final LoanApplicationRequest loanApplicationRequest) {
+  public List<LoanOfferDto> calculationOffers(
+      final LoanApplicationRequestDto loanApplicationRequestDto) {
 
     log.info("Начинается создание кредитных предложений");
 
-    if (loanApplicationRequest == null) {
+    if (loanApplicationRequestDto == null) {
 
       log.error(
           "LoanApplicationRequestDTO is null. LoanApplicationRequestDtoIsNullException exception");
@@ -33,31 +33,31 @@ public class ConveyorService {
           "LoanApplicationRequestDTO is null", new NullPointerException());
     }
 
-    return getCombinationLoanOfferDto(loanApplicationRequest);
+    return getCombinationLoanOfferDto(loanApplicationRequestDto);
   }
 
-  public List<LoanOffer> sortLoanOfferDtoWithGetRate(List<LoanOffer> loanOfferList) {
+  public List<LoanOfferDto> sortLoanOfferDtoWithGetRate(List<LoanOfferDto> loanOfferDtoList) {
 
-    loanOfferList.sort(Comparator.comparing(LoanOffer::getRate));
+    loanOfferDtoList.sort(Comparator.comparing(LoanOfferDto::getRate));
 
-    return loanOfferList;
+    return loanOfferDtoList;
   }
 
-  private List<LoanOffer> getCombinationLoanOfferDto(
-      LoanApplicationRequest loanApplicationRequest) {
+  private List<LoanOfferDto> getCombinationLoanOfferDto(
+      LoanApplicationRequestDto loanApplicationRequestDto) {
 
-    List<LoanOffer> loanOfferList = new ArrayList<>();
+    List<LoanOfferDto> loanOfferDtoList = new ArrayList<>();
 
-    loanOfferList.add(createLoanOfferDto(loanApplicationRequest, true, true));
-    loanOfferList.add(createLoanOfferDto(loanApplicationRequest, true, false));
-    loanOfferList.add(createLoanOfferDto(loanApplicationRequest, false, true));
-    loanOfferList.add(createLoanOfferDto(loanApplicationRequest, false, false));
+    loanOfferDtoList.add(createLoanOfferDto(loanApplicationRequestDto, true, true));
+    loanOfferDtoList.add(createLoanOfferDto(loanApplicationRequestDto, true, false));
+    loanOfferDtoList.add(createLoanOfferDto(loanApplicationRequestDto, false, true));
+    loanOfferDtoList.add(createLoanOfferDto(loanApplicationRequestDto, false, false));
 
-    return loanOfferList;
+    return loanOfferDtoList;
   }
 
-  public LoanOffer createLoanOfferDto(
-      LoanApplicationRequest loanApplicationRequest,
+  public LoanOfferDto createLoanOfferDto(
+      LoanApplicationRequestDto loanApplicationRequestDto,
       boolean isInsuranceEnabled,
       boolean isSalaryClient) {
 
@@ -66,7 +66,7 @@ public class ConveyorService {
         isInsuranceEnabled,
         isSalaryClient);
 
-    if (loanApplicationRequest == null) {
+    if (loanApplicationRequestDto == null) {
 
       log.error(
           "LoanApplicationRequestDTO is null. LoanApplicationRequestDtoIsNullException exception");
@@ -78,15 +78,14 @@ public class ConveyorService {
 
     BigDecimal monthlyPayment =
         calculateMonthlyPayment(
-            loanApplicationRequest.getTerm(),
+            loanApplicationRequestDto.getTerm(),
             currentRate,
-            loanApplicationRequest.getAmount());
+            loanApplicationRequestDto.getAmount());
 
-    return LoanOffer.builder()
-        .applicationId(++applicationId)
-        .requestedAmount(loanApplicationRequest.getAmount())
-        .totalAmount(loanApplicationRequest.getAmount())
-        .term(loanApplicationRequest.getTerm())
+    return LoanOfferDto.builder()
+        .requestedAmount(loanApplicationRequestDto.getAmount())
+        .totalAmount(loanApplicationRequestDto.getAmount())
+        .term(loanApplicationRequestDto.getTerm())
         .monthlyPayment(monthlyPayment)
         .rate(currentRate)
         .isInsuranceEnabled(isInsuranceEnabled)
