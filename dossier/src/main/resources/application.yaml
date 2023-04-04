@@ -4,8 +4,8 @@ spring:
   mail:
     host: smtp.yandex.ru
     port: 465
-    username: sladkkov@yandex.ru
-    password: juyyfomtcuwvledi
+    username:
+    password:
     send:
       from: noreply@sladkkov.com
 
