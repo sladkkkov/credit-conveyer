@@ -1,14 +1,14 @@
 package ru.sladkkov.service;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.sladkkov.model.Application;
 import ru.sladkkov.model.Client;
 import ru.sladkkov.repository.ApplicationRepository;
-import ru.sladkkov.repository.LoanOfferRepository;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -16,7 +16,6 @@ import ru.sladkkov.repository.LoanOfferRepository;
 public class ApplicationService {
 
   private final ApplicationRepository applicationRepository;
-  private final LoanOfferRepository loanOfferRepository;
 
   public Application saveApplication(Application application) {
     return applicationRepository.save(application);

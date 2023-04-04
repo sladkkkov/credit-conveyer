@@ -1,11 +1,10 @@
 package ru.sladkkov.mapper;
 
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
 import ru.sladkkov.dto.LoanApplicationRequestDto;
 import ru.sladkkov.model.Client;
-import ru.sladkkov.model.Credit;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = PassportMapper.class)
+@Mapper(componentModel = "spring", uses = PassportMapper.class)
 public interface ClientMapper {
 
   default Client loanApplicationRequestDtoToModelClient(

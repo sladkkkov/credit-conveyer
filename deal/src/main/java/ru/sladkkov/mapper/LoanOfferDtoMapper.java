@@ -6,7 +6,7 @@ import ru.sladkkov.model.LoanOffer;
 
 @Mapper(componentModel = "spring")
 public interface LoanOfferDtoMapper {
-  LoanOfferDto toDto(LoanOffer loanOffer);
+    LoanOfferDto toDto(LoanOffer loanOffer);
 
-  LoanOffer toModel(LoanOfferDto loanOfferDto);
+    LoanOffer toModel(LoanOfferDto loanOfferDto);
 }
