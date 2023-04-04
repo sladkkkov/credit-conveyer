@@ -19,7 +19,7 @@
         <module>deal</module>
         <module>dossier</module>
         <module>gateway</module>
-        <module>appplication</module>
+        <module>application</module>
         <module>conveyer</module>
         <module>dto-share</module>
         <module>eureka-conveyer</module>
