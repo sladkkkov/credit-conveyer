@@ -1,4 +1,7 @@
 HELP.md
+.classpath
+.project
+.settings/
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -6,9 +9,7 @@ target/
 
 ### STS ###
 .apt_generated
-.classpath
 .factorypath
-.project
 .settings
 .springBeans
 .sts4-cache
@@ -31,3 +32,4 @@ build/
 
 ### VS Code ###
 .vscode/
+!/.gitignore

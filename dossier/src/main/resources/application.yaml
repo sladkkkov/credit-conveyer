@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: dossier
+  mail:
+    host: smtp.yandex.ru
+    port: 465
+    username:
+    password:
+    send:
+      from: noreply@sladkkov.com
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka
+
+server:
+  port: 0
