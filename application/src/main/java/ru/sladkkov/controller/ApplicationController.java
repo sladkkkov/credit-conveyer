@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,6 +54,13 @@ public class ApplicationController {
         HttpEntity<LoanOfferDto> request = new HttpEntity<>(loanOfferDto);
 
         restTemplate.postForLocation(DEAL_APPLICATION_OFFER, request);
+    }
+
+
+    @GetMapping("/test")
+    public int test() {
+
+       return 123;
     }
 
 }

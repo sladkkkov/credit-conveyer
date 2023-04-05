@@ -1,5 +1,16 @@
 server:
-  port: 8088
+  port: 8081
 spring:
   application:
-    name: proxy
+    name: gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka
