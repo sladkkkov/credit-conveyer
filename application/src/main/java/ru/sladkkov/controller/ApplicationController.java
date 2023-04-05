@@ -55,12 +55,4 @@ public class ApplicationController {
 
         restTemplate.postForLocation(DEAL_APPLICATION_OFFER, request);
     }
-
-
-    @GetMapping("/test")
-    public int test() {
-
-       return 123;
-    }
-
 }
