@@ -20,6 +20,7 @@ jobs:
         run: mvn -B clean package -DskipTests
         
   push_image:
+    needs: build
     name: Push image to DockerHub
     runs-on: ubuntu-latest
     steps:
@@ -40,29 +41,7 @@ jobs:
           push: true
           tags: sladkkov/application:latest
           
-      - name: Docker Build and Push to DockerHub conveyor microservices
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: conveyor/Dockerfile
-          push: true
-          tags: sladkkov/conveyor:latest
-      
-      - name: Docker Build and Push to DockerHub deal microservices
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: deal/Dockerfile
-          push: true
-          tags: sladkkov/deal:latest
-          
-      - name: Docker Build and Push to DockerHub dossier microservices
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: dossier/Dockerfile
-          push: true
-          tags: sladkkov/dossier:latest
+     
           
   
  
