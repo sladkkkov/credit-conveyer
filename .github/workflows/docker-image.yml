@@ -36,6 +36,7 @@ jobs:
       - name: Open Web Client Directory
         run: |
             ls -la
+            cd application
             
       - name: Docker Build and Push to DockerHub application microservices
         uses: docker/build-push-action@v2
