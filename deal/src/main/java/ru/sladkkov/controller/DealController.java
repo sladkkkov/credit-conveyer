@@ -27,14 +27,14 @@ public class DealController {
 
     @PostMapping("/application")
     public ResponseEntity<LoanOfferDtoList> getAllCondition(
-            @Valid @RequestBody LoanApplicationRequestDto loanApplicationRequestDto) {
+            @RequestBody LoanApplicationRequestDto loanApplicationRequestDto) {
 
         return new ResponseEntity<>(
                 applicationFacade.createApplicationAndSaveEntity(loanApplicationRequestDto), HttpStatus.OK);
     }
 
     @PutMapping("/offer")
-    public void chooseOffer(@Valid @RequestBody LoanOfferDto loanOfferDto) {
+    public void chooseOffer(@RequestBody LoanOfferDto loanOfferDto) {
 
         applicationFacade.configureApplicationId(loanOfferDto);
     }

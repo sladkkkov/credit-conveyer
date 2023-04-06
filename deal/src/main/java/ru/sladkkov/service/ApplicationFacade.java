@@ -35,8 +35,8 @@ public class ApplicationFacade {
     private final ClientMapper clientMapper;
     // TODO сделать сеовисный слой
     private final LoanOfferRepository loanOfferRepository;
-    private static final String CONVEYOR_OFFERS_SORTED = "http://localhost:8085/conveyor/offers/sort";
-    private static final String CONVEYOR_CALCULATION = "http://localhost:8085/conveyor/calculation";
+    private static final String CONVEYOR_OFFERS_SORTED = "http://localhost:7652/conveyor/offers/sort";
+    private static final String CONVEYOR_CALCULATION = "http://localhost:7652/conveyor/calculation";
 
     public LoanOfferDtoList createApplicationAndSaveEntity(
             LoanApplicationRequestDto loanApplicationRequestDto) {
@@ -63,10 +63,10 @@ public class ApplicationFacade {
 
         application.setStatus(Status.CC_APPROVED);
 
-        var entity = loanOfferDtoMapper.toModel(loanOfferDto);
+        var loanOffer = loanOfferDtoMapper.toModel(loanOfferDto);
 
-        loanOfferRepository.save(entity);
-        application.setAppliedOffer(entity);
+        loanOfferRepository.save(loanOffer);
+        application.setAppliedOffer(loanOffer);
 
         return applicationService.saveApplication(application);
     }

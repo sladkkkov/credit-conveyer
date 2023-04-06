@@ -1,8 +1,5 @@
 server:
   port: 7651
-  deal:
-    port: 8086
-
 
 eureka:
   client:

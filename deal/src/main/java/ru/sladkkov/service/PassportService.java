@@ -14,14 +14,15 @@ import ru.sladkkov.repository.PassportRepository;
 @Slf4j
 public class PassportService {
 
-  private final PassportRepository passportRepository;
-  private final PassportMapper passportMapper;
+    private final PassportRepository passportRepository;
+    private final PassportMapper passportMapper;
 
-  public Passport savePassport(Passport passport) {
-    return passportRepository.save(passport);
-  }
+    public Passport savePassport(Passport passport) {
+        return passportRepository.save(passport);
+    }
 
 
-  public Passport getPassport(LoanApplicationRequestDto loanApplicationRequestDto) {
-    return passportMapper.toModel(loanApplicationRequestDto.getPassportDto());}
+    public Passport getPassport(LoanApplicationRequestDto loanApplicationRequestDto) {
+        return passportMapper.toModel(loanApplicationRequestDto.getPassportDto());
+    }
 }

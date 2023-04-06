@@ -3,6 +3,7 @@ package ru.sladkkov.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.sladkkov.enums.Status;
 import ru.sladkkov.model.Application;
 import ru.sladkkov.model.Client;
 import ru.sladkkov.repository.ApplicationRepository;
@@ -24,6 +25,7 @@ public class ApplicationService {
   public Application configureApplication(Client client) {
     Application application = new Application();
     application.setClient(client);
+    application.setStatus(Status.PREAPPROVAL);
     application.setCreationDate(LocalDateTime.now());
 
     return application;

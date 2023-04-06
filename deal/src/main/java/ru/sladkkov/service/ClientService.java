@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.sladkkov.dto.LoanApplicationRequestDto;
+import ru.sladkkov.exception.UserAlreadyExistException;
 import ru.sladkkov.mapper.ClientMapper;
 import ru.sladkkov.model.Client;
 import ru.sladkkov.repository.ClientRepository;
@@ -13,24 +14,31 @@ import ru.sladkkov.repository.ClientRepository;
 @Slf4j
 public class ClientService {
 
-  private final ClientRepository clientRepository;
-  private final PassportService passportService;
-  private final ClientMapper clientMapper;
+    private final ClientRepository clientRepository;
+    private final PassportService passportService;
+    private final ClientMapper clientMapper;
 
-  public Client saveClient(LoanApplicationRequestDto loanApplicationRequestDto) {
+    public Client saveClient(LoanApplicationRequestDto loanApplicationRequestDto) {
 
-    var passport = passportService.getPassport(loanApplicationRequestDto);
-    var client = getClient(loanApplicationRequestDto);
+        if (clientRepository.existsByEmail(loanApplicationRequestDto.getEmail())) {
 
-    client.setPassport(passport);
+            throw new UserAlreadyExistException("Такой пользователь уже существует");
+        }
 
-    passportService.savePassport(passport);
-    clientRepository.save(client);
+        var passport = passportService.getPassport(loanApplicationRequestDto);
+        var client = getClient(loanApplicationRequestDto);
 
-    return client;
-  }
+        client.setPassport(passport);
 
-  public Client getClient(LoanApplicationRequestDto loanApplicationRequestDto) {
-    return clientMapper.loanApplicationRequestDtoToModelClient(loanApplicationRequestDto);
-  }
+        passportService.savePassport(passport);
+
+
+        clientRepository.save(client);
+
+        return client;
+    }
+
+    public Client getClient(LoanApplicationRequestDto loanApplicationRequestDto) {
+        return clientMapper.loanApplicationRequestDtoToModelClient(loanApplicationRequestDto);
+    }
 }

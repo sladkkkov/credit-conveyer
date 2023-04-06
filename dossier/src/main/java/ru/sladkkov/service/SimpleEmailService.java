@@ -19,7 +19,6 @@ public class SimpleEmailService implements EmailService {
 
     private final JavaMailSender javaMailSender;
 
-    @Override
     public void sendSimpleMessage(String to, String subject, String text) {
 
         SimpleMailMessage message = new SimpleMailMessage();
